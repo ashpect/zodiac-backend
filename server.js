@@ -2,6 +2,7 @@ import http from "node:http";
 import { signFor } from "./zodiac.js";
 
 const PORT = Number(process.env.PORT) || 4000;
+const REQUEST_TIMEOUT_MS = 20_000;
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function json(res, status, body) {
@@ -33,6 +34,7 @@ function ageOn(today, dob) {
 }
 
 const server = http.createServer(async (req, res) => {
+  req.setTimeout(REQUEST_TIMEOUT_MS, () => json(res, 408, { error: "request timed out" }));
   if (req.method === "OPTIONS") return json(res, 204, {});
   if (req.method === "GET" && req.url === "/health") return json(res, 200, { ok: true });
   if (req.method !== "POST" || req.url !== "/api/zodiac") {
